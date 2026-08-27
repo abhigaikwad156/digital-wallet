@@ -4,6 +4,7 @@ import com.example.demo.dto.WalletResponse;
 import com.example.demo.service.WalletService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.dto.AddMoneyRequest;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -24,4 +25,16 @@ public class WalletController {
 
         return ResponseEntity.ok(wallet);
     }
+@PostMapping("/{userId}/add")
+public ResponseEntity<WalletResponse> addMoney(
+        @PathVariable Long userId,
+        @RequestBody AddMoneyRequest request) {
+
+    WalletResponse wallet = walletService.addMoney(
+            userId,
+            request.getAmount()
+    );
+
+    return ResponseEntity.ok(wallet);
+}
 }
