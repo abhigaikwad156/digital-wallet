@@ -4,7 +4,6 @@ import com.example.demo.dto.WalletResponse;
 import com.example.demo.entity.Wallet;
 import com.example.demo.repository.WalletRepository;
 
-
 import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
@@ -33,25 +32,30 @@ public class WalletService {
                 wallet.getBalance()
         );
     }
+
     public WalletResponse addMoney(Long userId, BigDecimal amount) {
 
-    Wallet wallet = walletRepository
-            .findByUserId(userId)
-            .orElseThrow(() ->
-                    new RuntimeException("Wallet not found")
-            );
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Amount must be greater than zero");
+        }
 
-    wallet.setBalance(
-            wallet.getBalance().add(amount)
-    );
+        Wallet wallet = walletRepository
+                .findByUserId(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("Wallet not found")
+                );
 
-    Wallet savedWallet = walletRepository.save(wallet);
+        wallet.setBalance(
+                wallet.getBalance().add(amount)
+        );
 
-    return new WalletResponse(
-            savedWallet.getId(),
-            savedWallet.getUser().getId(),
-            savedWallet.getUser().getName(),
-            savedWallet.getBalance()
-    );
-}
+        Wallet savedWallet = walletRepository.save(wallet);
+
+        return new WalletResponse(
+                savedWallet.getId(),
+                savedWallet.getUser().getId(),
+                savedWallet.getUser().getName(),
+                savedWallet.getBalance()
+        );
+    }
 }
