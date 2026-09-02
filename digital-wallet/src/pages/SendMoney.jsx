@@ -1,20 +1,45 @@
 import { useState } from "react";
 import { Send, UserRound, CheckCircle2, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import api from "../api/api";
 
-export default function SendMoney({ balance, setBalance, addTransaction }) {
+export default function SendMoney({ balance, setBalance, fetchWallet, fetchTransactions, userId }) {
   const [form, setForm] = useState({ recipient: "", amount: "", note: "" });
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const submit = async (e) => {
+  e.preventDefault();
 
-  const submit = (e) => {
-    e.preventDefault();
-    const amount = Number(form.amount);
-    if (!form.recipient || !amount || amount <= 0 || amount > balance) return;
-    setBalance(b => b - amount);
-    addTransaction({ name: form.recipient, type: "Sent", amount, date: "Just now", status: "Completed", initials: form.recipient.slice(0,2).toUpperCase() });
+  const amount = Number(form.amount);
+
+  if (!form.recipient || !amount || amount <= 0 || amount > balance) {
+    alert("Please enter valid recipient ID and amount");
+    return;
+  }
+
+  try {
+    await api.post("transactions/send", {
+      senderId: userId,
+      receiverId: Number(form.recipient),
+      amount: amount
+    });
+
+    setBalance(balance - amount);
+
+    await fetchWallet();
+    await fetchTransactions();
+
     setSuccess(true);
-  };
+
+  } catch (error) {
+    console.error("Transfer failed:", error);
+
+    alert(
+      error.response?.data?.message ||
+      "Transfer failed"
+    );
+  }
+};
 
   if (success) return (
     <div className="center-page">
@@ -34,7 +59,7 @@ export default function SendMoney({ balance, setBalance, addTransaction }) {
       <div className="form-layout">
         <form className="form-card" onSubmit={submit}>
           <label>Recipient</label>
-          <div className="input-icon"><UserRound size={18}/><input value={form.recipient} onChange={e => setForm({...form, recipient:e.target.value})} placeholder="Name or email address" required /></div>
+          <div className="input-icon"><UserRound size={18}/><input value={form.recipient} onChange={e => setForm({...form, recipient:e.target.value})} placeholder="Enter recipient user ID" required /></div>
           <label>Amount</label>
           <div className="amount-input"><span>₹</span><input type="number" min="1" max={balance} value={form.amount} onChange={e => setForm({...form, amount:e.target.value})} placeholder="0.00" required /></div>
           <div className="available">Available balance: <strong>₹{balance.toLocaleString("en-IN", {minimumFractionDigits:2})}</strong></div>

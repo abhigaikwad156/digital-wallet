@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
+
 import Dashboard from "./pages/Dashboard";
 import SendMoney from "./pages/SendMoney";
 import AddMoney from "./pages/AddMoney";
@@ -10,47 +12,306 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
-export const transactionsSeed = [
-  { id: 1, name: "Aarav Mehta", type: "Sent", amount: 1250, date: "Today, 10:42 AM", status: "Completed", initials: "AM" },
-  { id: 2, name: "Salary Credit", type: "Received", amount: 42000, date: "Yesterday, 9:15 AM", status: "Completed", initials: "SC" },
-  { id: 3, name: "Swiggy", type: "Sent", amount: 485, date: "Aug 23, 8:30 PM", status: "Completed", initials: "S" },
-  { id: 4, name: "Riya Sharma", type: "Received", amount: 2200, date: "Aug 22, 6:12 PM", status: "Completed", initials: "RS" },
-  { id: 5, name: "Amazon", type: "Sent", amount: 1899, date: "Aug 21, 2:44 PM", status: "Completed", initials: "A" }
-];
+import api from "./api/api";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [balance, setBalance] = useState(58420.75);
-  const [transactions, setTransactions] = useState(transactionsSeed);
+  // =========================
+  // USER
+  // =========================
 
-  const addTransaction = (transaction) => {
-    setTransactions((prev) => [{ ...transaction, id: Date.now() }, ...prev]);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  // =========================
+  // AUTHENTICATION
+  // =========================
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem("user") !== null;
+  });
+
+  // =========================
+  // WALLET
+  // =========================
+
+  const [balance, setBalance] = useState(0);
+
+  // =========================
+  // TRANSACTIONS
+  // =========================
+
+  const [transactions, setTransactions] = useState([]);
+
+  // =========================
+  // USER ID
+  // =========================
+
+  const userId = user?.id;
+
+  // =========================
+  // LOAD USER DATA
+  // =========================
+
+  useEffect(() => {
+    if (userId) {
+      fetchWallet();
+      fetchTransactions();
+    }
+  }, [userId]);
+
+  // =========================
+  // FETCH WALLET
+  // =========================
+
+  const fetchWallet = async () => {
+    try {
+      const response = await api.get(`/wallet/${userId}`);
+
+      console.log("Wallet response:", response.data);
+
+      setBalance(Number(response.data.balance));
+    } catch (error) {
+      console.error("Failed to fetch wallet:", error);
+    }
   };
+
+  // =========================
+  // FETCH TRANSACTIONS
+  // =========================
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await api.get(
+        `/transactions/user/${userId}`
+      );
+
+      const formattedTransactions = response.data.map((t) => {
+        const received = t.receiver.id === userId;
+
+        return {
+          id: t.id,
+
+          name: received
+            ? t.sender.name
+            : t.receiver.name,
+
+          type: received
+            ? "Received"
+            : "Sent",
+
+          amount: Number(t.amount),
+
+          date: new Date(t.createdAt).toLocaleString(
+            "en-IN",
+            {
+              day: "2-digit",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            }
+          ),
+
+          status: "Completed",
+        };
+      });
+
+      setTransactions(formattedTransactions);
+    } catch (error) {
+      console.error(
+        "Failed to fetch transactions:",
+        error
+      );
+    }
+  };
+
+  // =========================
+  // LOGIN / REGISTER
+  // =========================
 
   if (!isAuthenticated) {
     return (
       <Routes>
-        <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
-        <Route path="/register" element={<Register onRegister={() => setIsAuthenticated(true)} />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* LOGIN */}
+
+        <Route
+          path="/login"
+          element={
+            <Login
+              onLogin={(userData) => {
+                setUser(userData);
+                setIsAuthenticated(true);
+
+                localStorage.setItem(
+                  "user",
+                  JSON.stringify(userData)
+                );
+              }}
+            />
+          }
+        />
+
+        {/* REGISTER */}
+
+        <Route
+          path="/register"
+          element={
+            <Register
+              onRegister={async (userData) => {
+                try {
+                  const response = await api.post(
+                    "/auth/register",
+                    userData
+                  );
+
+                  console.log(
+                    "Registration successful:",
+                    response.data
+                  );
+
+                  alert(
+                    "Account created successfully!"
+                  );
+
+                  window.location.href = "/login";
+                } catch (error) {
+                  console.error(
+                    "Registration failed:",
+                    error
+                  );
+
+                  alert(
+                    error.response?.data?.message ||
+                    "Registration failed. Please try again."
+                  );
+                }
+              }}
+            />
+          }
+        />
+
+        {/* DEFAULT */}
+
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/login"
+              replace
+            />
+          }
+        />
       </Routes>
     );
   }
 
+  // =========================
+  // MAIN APPLICATION
+  // =========================
+
   return (
     <div className="app-shell">
-      <Sidebar onLogout={() => setIsAuthenticated(false)} />
+
+      {/* SIDEBAR */}
+
+      <Sidebar
+        onLogout={() => {
+          setUser(null);
+          setIsAuthenticated(false);
+          setBalance(0);
+          setTransactions([]);
+
+          localStorage.removeItem("user");
+        }}
+      />
+
+      {/* MAIN AREA */}
+
       <div className="main-area">
+
         <Navbar />
+
         <main className="page-content">
+
           <Routes>
-            <Route path="/" element={<Dashboard balance={balance} transactions={transactions} />} />
-            <Route path="/send" element={<SendMoney balance={balance} setBalance={setBalance} addTransaction={addTransaction} />} />
-            <Route path="/add-money" element={<AddMoney setBalance={setBalance} addTransaction={addTransaction} />} />
-            <Route path="/transactions" element={<Transactions transactions={transactions} />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+
+            {/* DASHBOARD */}
+
+            <Route
+              path="/"
+              element={
+                <Dashboard
+                  balance={balance}
+                  transactions={transactions}
+                  user={user}
+                />
+              }
+            />
+
+            {/* SEND MONEY */}
+
+            <Route
+              path="/send"
+              element={
+                <SendMoney
+                  balance={balance}
+                  setBalance={setBalance}
+                  userId={userId}
+                  fetchWallet={fetchWallet}
+                  fetchTransactions={
+                    fetchTransactions
+                  }
+                />
+              }
+            />
+
+            {/* ADD MONEY */}
+
+            <Route
+              path="/add-money"
+              element={
+                <AddMoney
+                  userId={userId}
+                  setBalance={setBalance}
+                  fetchWallet={fetchWallet}
+                />
+              }
+            />
+
+            {/* TRANSACTIONS */}
+
+            <Route
+              path="/transactions"
+              element={
+                <Transactions
+                  transactions={transactions}
+                />
+              }
+            />
+
+            {/* PROFILE */}
+
+            <Route
+              path="/profile"
+             element={<Profile user={user} />}
+            />
+
+            {/* FALLBACK */}
+
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to="/"
+                  replace
+                />
+              }
+            />
+
           </Routes>
+
         </main>
       </div>
     </div>

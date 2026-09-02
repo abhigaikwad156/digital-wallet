@@ -3,15 +3,17 @@ import { Send, Plus, ArrowUpRight, ArrowDownLeft, TrendingUp, Wallet } from "luc
 import BalanceCard from "../components/BalanceCard";
 import TransactionList from "../components/TransactionList";
 
-export default function Dashboard({ balance, transactions }) {
+export default function Dashboard({ balance, transactions, user }) {
   const sent = transactions.filter(t => t.type === "Sent").reduce((a, t) => a + t.amount, 0);
   const received = transactions.filter(t => t.type === "Received").reduce((a, t) => a + t.amount, 0);
+
+  const userName = user?.name?.split(' ')[0] || 'User';
 
   return (
     <>
       <div className="page-heading">
         <div>
-          <p className="greeting">Good evening, Abhimanyu 👋</p>
+          <p className="greeting">Good evening, {userName} 👋</p>
           <h1>Dashboard</h1>
           <p>Here's what's happening with your wallet today.</p>
         </div>
