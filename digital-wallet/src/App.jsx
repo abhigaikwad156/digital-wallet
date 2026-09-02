@@ -231,7 +231,7 @@ function App() {
 
       <div className="main-area">
 
-        <Navbar />
+        <Navbar user={user} />
 
         <main className="page-content">
 
