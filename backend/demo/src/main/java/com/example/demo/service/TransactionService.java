@@ -37,9 +37,9 @@ public class TransactionService {
                 .orElseThrow(() ->
                         new RuntimeException("Sender not found"));
 
-        User receiver = userRepository.findById(request.getReceiverId())
-                .orElseThrow(() ->
-                        new RuntimeException("Receiver not found"));
+        User receiver = userRepository.findByEmail(request.getReceiverEmail())
+        .orElseThrow(() ->
+                new RuntimeException("No user found with this email"));
 
         if (request.getAmount() == null ||
                 request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
@@ -48,8 +48,8 @@ public class TransactionService {
         }
 
         if (sender.getId().equals(receiver.getId())) {
-            throw new RuntimeException("Cannot send money to yourself");
-        }
+    throw new RuntimeException("Cannot send money to yourself");
+}
 
         Wallet senderWallet = walletRepository
                 .findByUserId(sender.getId())

@@ -1,71 +1,512 @@
 import { useState } from "react";
-import { Send, UserRound, CheckCircle2, ArrowLeft } from "lucide-react";
+import {
+  Send,
+  UserRound,
+  CheckCircle2,
+  ArrowLeft,
+  ShieldCheck,
+  ArrowRight,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
 
-export default function SendMoney({ balance, setBalance, fetchWallet, fetchTransactions, userId }) {
-  const [form, setForm] = useState({ recipient: "", amount: "", note: "" });
+export default function SendMoney({
+  balance,
+  fetchWallet,
+  fetchTransactions,
+  userId,
+}) {
+  const [form, setForm] = useState({
+    recipient: "",
+    amount: "",
+    note: "",
+  });
+
+  const [review, setReview] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
-  const submit = async (e) => {
-  e.preventDefault();
 
   const amount = Number(form.amount);
+  const receiverEmail = form.recipient.trim();
 
-  if (!form.recipient || !amount || amount <= 0 || amount > balance) {
-    alert("Please enter valid recipient ID and amount");
-    return;
-  }
+  const updateForm = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
-  try {
-    await api.post("transactions/send", {
-      senderId: userId,
-      receiverId: Number(form.recipient),
-      amount: amount
-    });
+  // --------------------------------
+  // VALIDATE PAYMENT
+  // --------------------------------
 
-   await fetchWallet();
-await fetchTransactions();
+  const validateForm = () => {
+    if (!receiverEmail) {
+      alert("Please enter the recipient's email.");
+      return false;
+    }
 
-    setSuccess(true);
+    if (!receiverEmail.includes("@")) {
+      alert("Please enter a valid email address.");
+      return false;
+    }
 
-  } catch (error) {
-    console.error("Transfer failed:", error);
+    if (!amount || amount <= 0) {
+      alert("Please enter a valid amount.");
+      return false;
+    }
 
-    alert(
-      error.response?.data?.message ||
-      "Transfer failed"
+    if (amount > balance) {
+      alert("Insufficient wallet balance.");
+      return false;
+    }
+
+    return true;
+  };
+
+  // --------------------------------
+  // CONTINUE TO REVIEW
+  // --------------------------------
+
+  const handleContinue = (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setReview(true);
+  };
+
+  // --------------------------------
+  // SEND MONEY
+  // --------------------------------
+
+  const handleSend = async () => {
+    setLoading(true);
+
+    try {
+      console.log("Sending payment:", {
+        senderId: userId,
+        receiverEmail: receiverEmail,
+        amount: amount,
+      });
+
+      await api.post("/transactions/send", {
+        senderId: userId,
+        receiverEmail: receiverEmail,
+        amount: amount,
+      });
+
+      // Get latest balance from backend
+      await fetchWallet();
+
+      // Get latest transactions from backend
+      await fetchTransactions();
+
+      setSuccess(true);
+    } catch (error) {
+      console.error("Transfer failed:", error);
+
+      console.error(
+        "Backend response:",
+        error.response?.data
+      );
+
+      alert(
+        error.response?.data?.message ||
+          error.response?.data ||
+          "Payment failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ========================================
+  // SUCCESS SCREEN
+  // ========================================
+
+  if (success) {
+    return (
+      <div className="center-page">
+        <div className="success-card">
+
+          <div className="success-icon">
+            <CheckCircle2 size={48} />
+          </div>
+
+          <h1>Payment Successful</h1>
+
+          <p>
+            ₹
+            {amount.toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+            })}{" "}
+            has been sent successfully.
+          </p>
+
+          <div className="payment-summary">
+
+            <div>
+              <span>Recipient</span>
+              <strong>{receiverEmail}</strong>
+            </div>
+
+            <div>
+              <span>Amount</span>
+              <strong>
+                ₹
+                {amount.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
+              </strong>
+            </div>
+
+            {form.note && (
+              <div>
+                <span>Note</span>
+                <strong>{form.note}</strong>
+              </div>
+            )}
+
+            <div>
+              <span>Status</span>
+              <strong className="green-text">
+                Completed
+              </strong>
+            </div>
+
+          </div>
+
+          <button
+            className="btn primary-btn"
+            onClick={() => navigate("/")}
+          >
+            Back to Dashboard
+          </button>
+
+        </div>
+      </div>
     );
   }
-};
 
-  if (success) return (
-    <div className="center-page">
-      <div className="success-card">
-        <div className="success-icon"><CheckCircle2 size={44}/></div>
-        <h1>Money sent!</h1>
-        <p>₹{Number(form.amount).toLocaleString("en-IN")} has been sent to <strong>{form.recipient}</strong>.</p>
-        <button className="btn primary-btn" onClick={() => navigate("/")}>Back to Dashboard</button>
+  // ========================================
+  // REVIEW SCREEN
+  // ========================================
+
+  if (review) {
+    return (
+      <div className="form-page">
+
+        <button
+          className="back-link"
+          onClick={() => setReview(false)}
+        >
+          <ArrowLeft size={17} />
+          Edit payment
+        </button>
+
+        <div className="form-header">
+
+          <div className="large-icon purple">
+            <ShieldCheck size={25} />
+          </div>
+
+          <div>
+            <h1>Review Payment</h1>
+            <p>
+              Please check the details before sending.
+            </p>
+          </div>
+
+        </div>
+
+        <div className="review-card">
+
+          <div className="review-amount">
+            <span>You're sending</span>
+
+            <h2>
+              ₹
+              {amount.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </h2>
+          </div>
+
+          <div className="review-row">
+            <span>Recipient</span>
+            <strong>{receiverEmail}</strong>
+          </div>
+
+          <div className="review-row">
+            <span>Current balance</span>
+
+            <strong>
+              ₹
+              {balance.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </strong>
+          </div>
+
+          <div className="review-row">
+            <span>Balance after payment</span>
+
+            <strong>
+              ₹
+              {(balance - amount).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </strong>
+          </div>
+
+          {form.note && (
+            <div className="review-row">
+              <span>Note</span>
+              <strong>{form.note}</strong>
+            </div>
+          )}
+
+          <button
+            className="btn primary-btn full-btn"
+            onClick={handleSend}
+            disabled={loading}
+          >
+            {loading ? (
+              "Processing..."
+            ) : (
+              <>
+                <ShieldCheck size={18} />
+                Confirm & Send ₹
+                {amount.toLocaleString("en-IN")}
+              </>
+            )}
+          </button>
+
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // ========================================
+  // SEND MONEY SCREEN
+  // ========================================
 
   return (
     <div className="form-page">
-      <Link to="/" className="back-link"><ArrowLeft size={17}/> Back to dashboard</Link>
-      <div className="form-header"><div className="large-icon purple"><Send size={25}/></div><div><h1>Send Money</h1><p>Transfer money securely from your wallet.</p></div></div>
+
+      <Link to="/" className="back-link">
+        <ArrowLeft size={17} />
+        Back to dashboard
+      </Link>
+
+      <div className="form-header">
+
+        <div className="large-icon purple">
+          <Send size={25} />
+        </div>
+
+        <div>
+          <h1>Send Money</h1>
+
+          <p>
+            Send money securely from your PayFlow wallet.
+          </p>
+        </div>
+
+      </div>
+
       <div className="form-layout">
-        <form className="form-card" onSubmit={submit}>
+
+        {/* =========================
+            PAYMENT FORM
+           ========================= */}
+
+        <form
+          className="form-card"
+          onSubmit={handleContinue}
+        >
+
+          {/* RECIPIENT */}
+
           <label>Recipient</label>
-          <div className="input-icon"><UserRound size={18}/><input value={form.recipient} onChange={e => setForm({...form, recipient:e.target.value})} placeholder="Enter recipient user ID" required /></div>
+
+          <div className="input-icon">
+
+            <UserRound size={18} />
+
+            <input
+              type="email"
+              value={form.recipient}
+              onChange={(e) =>
+                updateForm(
+                  "recipient",
+                  e.target.value
+                )
+              }
+              placeholder="Enter recipient email"
+              required
+            />
+
+          </div>
+
+          <p className="input-help">
+            Enter the email address of the person
+            you want to pay.
+          </p>
+
+          {/* AMOUNT */}
+
           <label>Amount</label>
-          <div className="amount-input"><span>₹</span><input type="number" min="1" max={balance} value={form.amount} onChange={e => setForm({...form, amount:e.target.value})} placeholder="0.00" required /></div>
-          <div className="available">Available balance: <strong>₹{balance.toLocaleString("en-IN", {minimumFractionDigits:2})}</strong></div>
-          <label>Note <span className="optional">Optional</span></label>
-          <textarea rows="3" value={form.note} onChange={e => setForm({...form, note:e.target.value})} placeholder="What's this payment for?" />
-          <button className="btn primary-btn full-btn"><Send size={18}/> Send ₹{form.amount || "0"}</button>
+
+          <div className="amount-input">
+
+            <span>₹</span>
+
+            <input
+              type="number"
+              value={form.amount}
+              onChange={(e) =>
+                updateForm(
+                  "amount",
+                  e.target.value
+                )
+              }
+              placeholder="0.00"
+              min="1"
+              max={balance}
+              required
+            />
+
+          </div>
+
+          {/* AVAILABLE BALANCE */}
+
+          <div className="available">
+
+            Available balance:
+
+            <strong>
+              ₹
+              {balance.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </strong>
+
+          </div>
+
+          {/* QUICK AMOUNTS */}
+
+          <div className="quick-amounts">
+
+            {[100, 500, 1000, 2000].map(
+              (value) => (
+                <button
+                  type="button"
+                  key={value}
+                  disabled={value > balance}
+                  onClick={() =>
+                    updateForm(
+                      "amount",
+                      value.toString()
+                    )
+                  }
+                >
+                  ₹{value}
+                </button>
+              )
+            )}
+
+          </div>
+
+          {/* NOTE */}
+
+          <label>
+            Note{" "}
+            <span className="optional">
+              Optional
+            </span>
+          </label>
+
+          <textarea
+            rows="3"
+            value={form.note}
+            onChange={(e) =>
+              updateForm(
+                "note",
+                e.target.value
+              )
+            }
+            placeholder="What's this payment for?"
+            maxLength={100}
+          />
+
+          {/* CONTINUE */}
+
+          <button
+            className="btn primary-btn full-btn"
+            type="submit"
+          >
+            Continue
+            <ArrowRight size={18} />
+          </button>
+
         </form>
-        <div className="info-card"><h3>Transfer securely</h3><p>Your payment is processed securely. Never share your wallet password or OTP with anyone.</p><div className="info-line"><span>Wallet balance</span><strong>₹{balance.toLocaleString("en-IN")}</strong></div><div className="info-line"><span>Demo mode</span><strong className="green-text">Enabled</strong></div></div>
+
+        {/* =========================
+            INFORMATION CARD
+           ========================= */}
+
+        <div className="info-card">
+
+          <div className="info-icon">
+            <ShieldCheck size={22} />
+          </div>
+
+          <h3>Secure transfer</h3>
+
+          <p>
+            Review your payment details before
+            the money is transferred.
+          </p>
+
+          <div className="info-line">
+
+            <span>Wallet balance</span>
+
+            <strong>
+              ₹
+              {balance.toLocaleString("en-IN")}
+            </strong>
+
+          </div>
+
+          <div className="info-line">
+
+            <span>Payment mode</span>
+
+            <strong className="green-text">
+              PayFlow Wallet
+            </strong>
+
+          </div>
+
+          <div className="info-line">
+
+            <span>Processing</span>
+
+            <strong>
+              Instant
+            </strong>
+
+          </div>
+
+        </div>
+
       </div>
     </div>
   );

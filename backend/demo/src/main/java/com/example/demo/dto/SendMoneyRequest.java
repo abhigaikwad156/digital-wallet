@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public class SendMoneyRequest {
 
     private Long senderId;
-    private Long receiverId;
+    private String receiverEmail;
     private BigDecimal amount;
 
     public SendMoneyRequest() {
@@ -19,12 +19,12 @@ public class SendMoneyRequest {
         this.senderId = senderId;
     }
 
-    public Long getReceiverId() {
-        return receiverId;
+    public String getReceiverEmail() {
+        return receiverEmail;
     }
 
-    public void setReceiverId(Long receiverId) {
-        this.receiverId = receiverId;
+    public void setReceiverEmail(String receiverEmail) {
+        this.receiverEmail = receiverEmail;
     }
 
     public BigDecimal getAmount() {
