@@ -24,10 +24,8 @@ export default function SendMoney({ balance, setBalance, fetchWallet, fetchTrans
       amount: amount
     });
 
-    setBalance(balance - amount);
-
-    await fetchWallet();
-    await fetchTransactions();
+   await fetchWallet();
+await fetchTransactions();
 
     setSuccess(true);
 

@@ -83,49 +83,49 @@ function App() {
   // =========================
 
   const fetchTransactions = async () => {
-    try {
-      const response = await api.get(
-        `/transactions/user/${userId}`
-      );
+  try {
+    const response = await api.get(
+      `/transactions/user/${userId}`
+    );
 
-      const formattedTransactions = response.data.map((t) => {
-        const received = t.receiver.id === userId;
+    const formattedTransactions = response.data.map((t) => {
+      const received = t.receiverId === userId;
 
-        return {
-          id: t.id,
+      return {
+        id: t.id,
 
-          name: received
-            ? t.sender.name
-            : t.receiver.name,
+        name: received
+          ? t.senderName
+          : t.receiverName,
 
-          type: received
-            ? "Received"
-            : "Sent",
+        type: received
+          ? "Received"
+          : "Sent",
 
-          amount: Number(t.amount),
+        amount: Number(t.amount),
 
-          date: new Date(t.createdAt).toLocaleString(
-            "en-IN",
-            {
-              day: "2-digit",
-              month: "short",
-              hour: "2-digit",
-              minute: "2-digit",
-            }
-          ),
+        date: new Date(t.createdAt).toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
 
-          status: "Completed",
-        };
-      });
+        status: "Completed",
+      };
+    });
 
-      setTransactions(formattedTransactions);
-    } catch (error) {
-      console.error(
-        "Failed to fetch transactions:",
-        error
-      );
-    }
-  };
+    console.log("Formatted transactions:", formattedTransactions);
+
+    setTransactions(formattedTransactions);
+
+  } catch (error) {
+    console.error(
+      "Failed to fetch transactions:",
+      error
+    );
+  }
+};
 
   // =========================
   // LOGIN / REGISTER
@@ -295,7 +295,7 @@ function App() {
 
             <Route
               path="/profile"
-             element={<Profile user={user} />}
+              element={<Profile user={user} />}
             />
 
             {/* FALLBACK */}
