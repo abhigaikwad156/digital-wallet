@@ -1,6 +1,7 @@
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import NotificationCenter from "./NotificationCenter";
 
-export default function Navbar({user}) {
+export default function Navbar({ user, transactions }) {
   return (
     <header className="topbar">
       <div className="mobile-brand"><span>PayFlow</span></div>
@@ -9,7 +10,7 @@ export default function Navbar({user}) {
         <input placeholder="Search transactions..." />
       </div>
       <div className="topbar-actions">
-        <button className="icon-btn notification"><Bell size={19} /><i /></button>
+        <NotificationCenter user={user} transactions={transactions} />
         <div className="user-mini">
           <div className="avatar">
             {user?.name?.slice(0, 2).toUpperCase()}

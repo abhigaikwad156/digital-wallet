@@ -11,8 +11,192 @@
   &:hover {
     border-color: var(--accent-border);
   }
+}
 
-  &:focus-visible {
+  /* =========================================
+     NOTIFICATION CENTER
+     ========================================= */
+
+  .notification-center {
+    position: relative;
+  }
+
+  .notification {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+  }
+
+  .notification:hover,
+  .notification[aria-expanded="true"] {
+    background: #f0f0ff;
+    color: #5556d8;
+  }
+
+  .notification-panel {
+    position: absolute;
+    z-index: 20;
+    top: 48px;
+    right: -8px;
+    width: 360px;
+    overflow: hidden;
+    border: 1px solid #e3e6ef;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 14px 35px #19204a1f;
+  }
+
+  .notification-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 17px 18px 14px;
+    border-bottom: 1px solid #edf0f4;
+  }
+
+  .notification-panel-header h2 {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .notification-panel-header span {
+    display: block;
+    margin-top: 4px;
+    color: #9098a9;
+    font-size: 11px;
+  }
+
+  .notification-panel-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .notification-action,
+  .notification-close {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 0;
+    background: none;
+    color: #5b5ce2;
+    font-size: 10px;
+  }
+
+  .notification-action:disabled {
+    cursor: default;
+    opacity: .45;
+  }
+
+  .notification-close {
+    padding: 2px;
+    color: #8991a3;
+  }
+
+  .notification-list {
+    max-height: 365px;
+    overflow-y: auto;
+  }
+
+  .notification-item {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    border: 0;
+    border-bottom: 1px solid #f1f2f6;
+    background: #fff;
+    text-align: left;
+  }
+
+  .notification-item:last-child {
+    border-bottom: 0;
+  }
+
+  .notification-item:hover {
+    background: #fafaff;
+  }
+
+  .notification-item.unread {
+    background: #f8f8ff;
+  }
+
+  .notification-item-icon {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    place-items: center;
+    border-radius: 9px;
+    color: #5556d8;
+    background: #eeeeff;
+  }
+
+  .notification-item-icon.received {
+    color: #20a168;
+    background: #eaf9f1;
+  }
+
+  .notification-item-icon.sent {
+    color: #e35c68;
+    background: #fff0f0;
+  }
+
+  .notification-item-content {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .notification-item-content strong,
+  .notification-item-content span,
+  .notification-item-content small {
+    display: block;
+  }
+
+  .notification-item-content strong {
+    color: #182033;
+    font-size: 12px;
+  }
+
+  .notification-item-content span {
+    overflow: hidden;
+    margin-top: 3px;
+    color: #747c8f;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .notification-item-content small {
+    margin-top: 5px;
+    color: #a0a7b5;
+    font-size: 9px;
+  }
+
+  .notification-unread-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: #ef5b64;
+  }
+
+  @media (max-width: 520px) {
+    .notification-panel {
+      position: fixed;
+      top: 68px;
+      right: 12px;
+      left: 12px;
+      width: auto;
+    }
+  }
+
+.counter:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
@@ -286,6 +470,39 @@
   max-width: 500px;
   width: 100%;
   text-align: center;
+}
+
+.password-confirmation {
+  margin-top: 22px;
+}
+
+.password-confirmation label {
+  display: block;
+  margin-bottom: 8px;
+  color: #182033;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.password-confirmation input {
+  width: 100%;
+  height: 43px;
+  padding: 0 12px;
+  border: 1px solid #dfe3eb;
+  border-radius: 9px;
+  outline: 0;
+  font-size: 13px;
+}
+
+.password-confirmation input:focus {
+  border-color: #7778e7;
+  box-shadow: 0 0 0 3px #5b5ce20e;
+}
+
+.form-error {
+  margin: 7px 0 0;
+  color: #d64e5b;
+  font-size: 11px;
 }
 
 .payment-summary {

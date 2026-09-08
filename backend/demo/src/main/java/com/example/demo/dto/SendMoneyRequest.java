@@ -7,6 +7,7 @@ public class SendMoneyRequest {
     private Long senderId;
     private String receiverEmail;
     private BigDecimal amount;
+    private String password;
 
     public SendMoneyRequest() {
     }
@@ -33,5 +34,13 @@ public class SendMoneyRequest {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

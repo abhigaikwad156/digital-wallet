@@ -231,7 +231,7 @@ function App() {
 
       <div className="main-area">
 
-        <Navbar user={user} />
+        <Navbar user={user} transactions={transactions} />
 
         <main className="page-content">
 
@@ -275,7 +275,6 @@ function App() {
                 <AddMoney
                   userId={userId}
                   setBalance={setBalance}
-                  fetchWallet={fetchWallet}
                 />
               }
             />

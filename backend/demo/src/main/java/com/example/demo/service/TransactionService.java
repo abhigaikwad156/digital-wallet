@@ -8,6 +8,7 @@ import com.example.demo.repository.TransactionRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.WalletRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ public class TransactionService {
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public TransactionService(
             UserRepository userRepository,
@@ -36,6 +38,11 @@ public class TransactionService {
         User sender = userRepository.findById(request.getSenderId())
                 .orElseThrow(() ->
                         new RuntimeException("Sender not found"));
+
+        if (request.getPassword() == null || request.getPassword().isBlank()
+                || !passwordEncoder.matches(request.getPassword(), sender.getPassword())) {
+            throw new RuntimeException("Invalid wallet password");
+        }
 
         User receiver = userRepository.findByEmail(request.getReceiverEmail())
         .orElseThrow(() ->

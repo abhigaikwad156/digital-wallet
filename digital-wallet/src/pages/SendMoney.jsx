@@ -25,6 +25,8 @@ export default function SendMoney({
   const [review, setReview] = useState(false);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const navigate = useNavigate();
 
@@ -85,13 +87,20 @@ export default function SendMoney({
   // --------------------------------
 
   const handleSend = async () => {
+    if (!password) {
+      setPasswordError("Enter your wallet password to continue.");
+      return;
+    }
+
     setLoading(true);
+    setPasswordError("");
 
     try {
       console.log("Sending payment:", {
         senderId: userId,
         receiverEmail: receiverEmail,
         amount: amount,
+        password,
       });
 
       await api.post("/transactions/send", {
@@ -107,6 +116,7 @@ export default function SendMoney({
       await fetchTransactions();
 
       setSuccess(true);
+      setPassword("");
     } catch (error) {
       console.error("Transfer failed:", error);
 
@@ -270,6 +280,23 @@ export default function SendMoney({
               <strong>{form.note}</strong>
             </div>
           )}
+
+          <div className="password-confirmation">
+            <label htmlFor="transfer-password">Confirm your password</label>
+            <input
+              id="transfer-password"
+              type="password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setPasswordError("");
+              }}
+              placeholder="Enter your wallet password"
+              autoComplete="current-password"
+              disabled={loading}
+            />
+            {passwordError && <p className="form-error">{passwordError}</p>}
+          </div>
 
           <button
             className="btn primary-btn full-btn"

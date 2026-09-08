@@ -15,8 +15,7 @@ import api from "../api/api";
 
 export default function AddMoney({
   userId,
-  setBalance,
-  fetchWallet
+  setBalance
 }) {
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("UPI");
@@ -71,9 +70,6 @@ export default function AddMoney({
         Number(response.data.balance)
       );
 
-      // Optional extra refresh from backend
-      await fetchWallet();
-
       // Show success screen
       setSuccess(true);
 
@@ -93,10 +89,13 @@ export default function AddMoney({
         error.response?.data
       );
 
-      alert(
+      const responseMessage =
         error.response?.data?.message ||
-        "Failed to add money"
-      );
+        (typeof error.response?.data === "string"
+          ? error.response.data
+          : null);
+
+      alert(responseMessage || "Failed to add money. Please try again.");
     }
   };
 

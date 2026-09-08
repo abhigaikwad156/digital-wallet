@@ -1,16 +1,105 @@
-# React + Vite
+# PayFlow Digital Wallet
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+PayFlow is a React-based digital wallet interface for managing a wallet balance, sending and adding money, reviewing transactions, and viewing account notifications.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- User login and registration
+- Wallet balance dashboard
+- Send money to another user
+- Add money to the wallet
+- Transaction history
+- Profile page
+- Notification center with:
+  - Sent and received payment notifications
+  - Unread notification count
+  - Mark individual notifications as read
+  - Mark all notifications as read
+  - Read state persisted per user in local storage
+- Responsive layout for desktop and mobile screens
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 18
+- Vite
+- React Router
+- Axios
+- Lucide React icons
 
-## Expanding the Oxlint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- Node.js 18 or later
+- npm
+- The PayFlow backend running at `http://localhost:8080`
+
+## Getting Started
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+3. Open the URL shown by Vite, usually:
+
+   ```text
+   http://localhost:5173
+   ```
+
+## Available Scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Create a production build |
+| `npm run preview` | Preview the production build locally |
+
+## Application Routes
+
+| Route | Description |
+| --- | --- |
+| `/login` | Sign in |
+| `/register` | Create an account |
+| `/` | Wallet dashboard |
+| `/send` | Send money |
+| `/add-money` | Add money to the wallet |
+| `/transactions` | View transaction history |
+| `/profile` | View profile information |
+
+## Backend Configuration
+
+API requests are configured in `src/api/api.js` and currently use:
+
+```text
+http://localhost:8080/api
+```
+
+The authenticated user is read from `localStorage` and its token is attached to API requests. Make sure the backend is running before using authenticated wallet features.
+
+## Project Structure
+
+```text
+src/
+├── api/              API client configuration
+├── components/       Shared UI components
+├── pages/            Application pages
+├── App.jsx           Authentication, wallet data, and routing
+├── App.css           Component styles
+└── index.css         Global styles
+```
+
+## Production Build
+
+Create a production build with:
+
+```bash
+npm run build
+```
+
+The generated files are placed in the `dist/` directory.
